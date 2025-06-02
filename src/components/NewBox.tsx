@@ -30,6 +30,8 @@ export default function NewBox() {
   };
 
   const [phase, setPhase] = useState(phases[0]);
+  const [phaseSeconds, setPhaseSeconds] = useState(1);
+
 
   useEffect(() => {
     let startTime = Date.now();
@@ -39,6 +41,9 @@ export default function NewBox() {
       const elapsed = (now - startTime) % totalCycle;
       const index = Math.floor(elapsed / phaseDuration);
       setPhase(phases[index]);
+      const seconds = Math.floor((elapsed % phaseDuration) / 1000) + 1;
+      setPhaseSeconds(seconds);
+
     };
 
     if (running) {
@@ -48,12 +53,19 @@ export default function NewBox() {
     }
   }, [running]);
 
+  function formatPhase(phase: string) {
+    if (phase.startsWith("Pause")) return "Pause";
+    return phase
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase());
+  }
+
   return (
     <>
-      <Card className="w-full max-w-md h-[50vh] flex flex-col justify-between items-center mx-auto"
+      <Card className="w-full max-w-md py-10 mt-12 flex flex-col items-center mx-auto space-y-8"
      
       >
-        <div className="relative flex-grow flex justify-center items-center">
+        <div className="relative flex-grow flex justify-center items-center pt-10">
           <div className={`w-32 h-32 md:h-40 md:w-40 border-4 relative ${phaseStyles[phase].border}`}>
             <span className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full pb-8 text-sm ${phase === "Inhale" ? phaseStyles[phase].text + " font-semibold scale-110" : "text-blue-300"}`}>
               Inhale
@@ -91,9 +103,19 @@ export default function NewBox() {
             )}
           </div>
         </div>
+
+       {running && (
+          <div
+            className={`text-lg font-semibold text-center mt-5 px-4 py-2 rounded-md shadow-sm 
+                        ${phaseStyles[phase].text} bg-blue-50`}
+          >
+            {`${formatPhase(phase)} – ${phaseSeconds}`}
+          </div>
+        )}
+
         <button
           onClick={toggleRunning}
-          className="mt-6 px-6 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white font-medium rounded-full shadow-md hover:scale-105 transition-transform"
+          className="mt-2 px-6 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white font-medium rounded-full shadow-md hover:scale-105 transition-transform"
         >
           {running ? "Stop" : "Start"}
         </button>
