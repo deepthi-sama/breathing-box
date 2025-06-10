@@ -9,13 +9,27 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 const suggestions: Record<string, string[]> = {
-  iam: ['not good enough', 'a failure', 'unworthy'],
-  peopleSee: ['a burden', 'lazy', 'weird'],
-  always: ['messing things up', 'too emotional', 'anxious'],
-  never: ['succeed', 'be loved', 'be enough'],
+  iam: ['not good enough', 'a failure', 'unworthy','powerless','incompetent','dishonest','coward','useless','unskilled','stupid','incapable'],
+  peopleSee: ['a burden', 'lazy', 'weird','fake','arrogant','unfunny','a joke','annoying','ignorant','selfish'],
+  always: ['messing things up', 'too emotional', 'anxious','hesitant','ignored','neglected','wrong'],
+  never: ['succeed', 'be loved', 'be enough','enjoy life','feel blessed'],
 };
 
 type SentenceKeys = 'I am' | 'People see me as' | "I'm always" | "I'll never be able to";
+
+// Generate glass fragments with random positions and rotations
+const generateGlassFragments = (count: number) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    size: Math.random() * 40 + 20, // Random size between 20-60px
+    initialX: Math.random() * 300 - 150, // Random X position
+    initialY: Math.random() * 200 - 100, // Random Y position
+    rotation: Math.random() * 360, // Random rotation
+    velocityX: (Math.random() - 0.5) * 200, // Random horizontal velocity
+    velocityY: Math.random() * -100 - 50, // Upward initial velocity
+    delay: Math.random() * 0.1, // Small random delay
+  }));
+};
 
 export default function BurnNegativeCarousel() {
   const [step, setStep] = useState<number>(0);
@@ -26,6 +40,7 @@ export default function BurnNegativeCarousel() {
     "I'll never be able to": '',
   });
   const [crushed, setCrushed] = useState<boolean>(false);
+  const [glassFragments] = useState(() => generateGlassFragments(15));
   const containerRef = useRef<HTMLDivElement>(null);
 
   const filledAny = Object.values(sentences).some(Boolean);
@@ -35,7 +50,7 @@ export default function BurnNegativeCarousel() {
 
   const handleCrush = () => {
     setCrushed(true);
-    setTimeout(() => setStep(step + 1), 1000);
+    setTimeout(() => setStep(step + 1), 1000); // Increased delay to see full animation
   };
 
   const handleDiscard = () => {
@@ -76,7 +91,7 @@ export default function BurnNegativeCarousel() {
         >
           <CarouselItem className="p-4">
             <Card className={cardBaseStyle}>
-              <div  className="flex flex-col items-center justify-center text-center flex-1">
+              <div className="flex flex-col items-center justify-center text-center flex-1">
                 <h2 className="text-2xl font-bold mb-2">Burn the Negative</h2>
                 <p className="text-sm text-muted-foreground mb-6">
                     Ready to let go? <br />
@@ -101,25 +116,79 @@ export default function BurnNegativeCarousel() {
 
           <CarouselItem className="p-4">
             <Card className={cardBaseStyle}>
-              <motion.div
-                className="border p-4 rounded-lg mb-4 flex-1 flex flex-col justify-center items-center"
-                initial={{ scale: 1 }}
-                animate={crushed ? { scale: 0, rotate: 45, opacity: 0 } : {}}
-                transition={{ duration: 0.7 }}
-              >
-                {filledSentences.map((line, idx) => (
-                  <motion.p
-                    key={idx}
-                    className="text-lg font-semibold text-black-700 text-center"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.2 }}
+              <div className="relative flex-1 flex items-center justify-center">
+                {/* Original card content */}
+                <motion.div
+                  className="border-2 border-gray-300 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg relative overflow-hidden"
+                  style={{ 
+                    background: 'linear-gradient(135deg, rgba(173, 216, 230,0.9) 0%, rgba(173, 216, 230,0.6) 100%)',
+                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3), 0 8px 16px rgba(0,0,0,0.1)'
+                  }}
+                  initial={{ scale: 1, opacity: 1 }}
+                  animate={crushed ? { 
+                    scale: 0.95, 
+                    opacity: 0,
+                    filter: 'blur(2px)'
+                  } : {}}
+                  transition={{ duration: 0}}
+                >
+                  {/* Glass shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent pointer-events-none" />
+                  
+                  {filledSentences.map((line, idx) => (
+                    <motion.p
+                      key={idx}
+                      className="text-lg font-semibold text-gray-800 text-center mb-2 relative z-10"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: crushed ? 0 : 1, y: 0 }}
+                      transition={{ delay: idx * 0.2 }}
+                    >
+                      {line}
+                    </motion.p>
+                  ))}
+                </motion.div>
+
+                {/* Glass fragments */}
+                {crushed && glassFragments.map((fragment) => (
+                  <motion.div
+                    key={fragment.id}
+                    className="absolute bg-blue/80 backdrop-blur-sm border border-gray-200"
+                    style={{
+                      width: fragment.size,
+                      height: fragment.size,
+                      clipPath: 'polygon(30% 0%, 0% 50%, 40% 100%, 100% 70%, 80% 20%)', // Irregular glass shape
+                      background: 'linear-gradient(135deg, rgba(173, 216, 230,0.9) 0%, rgba(173, 216, 230,0.6) 100%)',
+
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.5)'
+                    }}
+                    initial={{
+                      x: fragment.initialX,
+                      y: fragment.initialY,
+                      rotate: fragment.rotation,
+                      opacity: 1,
+                      scale: 1
+                    }}
+                    animate={{
+                      x: fragment.initialX + fragment.velocityX,
+                      y: fragment.initialY + fragment.velocityY + 800, // Fall down due to gravity
+                      rotate: fragment.rotation + (fragment.velocityX * 2), // Spinning based on velocity
+                      opacity: 0,
+                      scale: 0.3
+                    }}
+                    transition={{
+                      duration: 2.8,
+                      delay: fragment.delay,
+                      ease: [0.25, 0.46, 0.45, 0.94], // Custom easing for realistic physics
+                    }}
                   >
-                    {line}
-                  </motion.p>
+                    {/* Inner shine for each fragment */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent" />
+                  </motion.div>
                 ))}
-              </motion.div>
-              <Button variant="destructive" onClick={handleCrush}>Burn</Button>
+              </div>
+              <Button variant="destructive" onClick={handleCrush} disabled={crushed}>
+                {crushed ? 'Breaking...' : 'Burn'}
+              </Button>
             </Card>
           </CarouselItem>
 
